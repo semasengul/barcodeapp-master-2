@@ -1,0 +1,74 @@
+import React, { useState, useEffect } from 'react';
+import { Text, View, StyleSheet, Button } from 'react-native';
+import { BarCodeScanner } from 'expo-barcode-scanner';
+import Camera from 'react-native-camera';
+
+import { useNavigation , useNavigationParam } from 'react-navigation-hooks'
+
+
+
+export default function BarcodeScanner() {
+    const [hasPermission, setHasPermission] = useState(null);
+    const [scanned, setScanned] = useState(false);
+
+    useEffect(() => {
+        (async () => {
+            const { status } = await BarCodeScanner.requestPermissionsAsync();
+            setHasPermission(status === 'granted');
+        })();
+    }, []);
+
+    const { navigate } = useNavigation();
+
+
+    if (hasPermission === null) {
+        return <Text>Requesting for camera permission</Text>;
+    }
+    if (hasPermission === false) {
+        return <Text>No access to camera</Text>;
+    }
+
+    return (
+        <View
+            style={{
+                flex: 1,
+                flexDirection: 'column',
+                justifyContent: 'flex-end',
+            }}>
+            <BarCodeScanner
+                onBarCodeScanned={(type,data,name,size,color) =>{
+                    //console.log(type);
+
+                    setScanned(true);
+
+                    if(scanned)
+                    {
+                        alert('Ürün adı '+type.name+'Boyut '+type.size+'Rengi'+type.color
+                        );
+
+                        const request = new Request(
+                            `SELECT URUN_ADI
+                             FROM dbadmin1.Urunler`,
+                            (err, rowCount) => {
+                              if (err) {
+                                // console.error(err.message);
+                              } else {
+                                console.log(`${rowCount} row(s) returned`);
+                              }
+                            }
+                          );
+                        
+                        navigate('ProductViewer');    
+                    }
+                    
+                    
+                }}
+                style={StyleSheet.absoluteFillObject}
+            />
+
+            {scanned && (
+                <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />
+            )}
+        </View>
+    );
+}

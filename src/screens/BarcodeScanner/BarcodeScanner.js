@@ -20,6 +20,10 @@ export default function BarcodeScanner() {
 
     const { navigate } = useNavigation();
 
+    const handleBarCodeScanned = ({ type, data }) => {
+        setScanned(true);
+        navigate('ProductViewer', {data: data, type: type});
+    };
 
     if (hasPermission === null) {
         return <Text>Requesting for camera permission</Text>;
@@ -36,33 +40,7 @@ export default function BarcodeScanner() {
                 justifyContent: 'flex-end',
             }}>
             <BarCodeScanner
-                onBarCodeScanned={(type,data,name,size,color) =>{
-                    //console.log(type);
-
-                    setScanned(true);
-
-                    if(scanned)
-                    {
-                        alert('Ürün adı '+type.name+'Boyut '+type.size+'Rengi'+type.color
-                        );
-
-                        const request = new Request(
-                            `SELECT URUN_ADI
-                             FROM dbadmin1.Urunler`,
-                            (err, rowCount) => {
-                              if (err) {
-                                // console.error(err.message);
-                              } else {
-                                console.log(`${rowCount} row(s) returned`);
-                              }
-                            }
-                          );
-                        
-                        navigate('ProductViewer');    
-                    }
-                    
-                    
-                }}
+                onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
                 style={StyleSheet.absoluteFillObject}
             />
 
